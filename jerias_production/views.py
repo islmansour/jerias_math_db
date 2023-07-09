@@ -14,10 +14,14 @@ from datetime import datetime
 from django.forms.models import model_to_dict
 from django.views.decorators.http import require_GET, require_POST
 from django.core.serializers.json import DjangoJSONEncoder
-
-import datetime
+from datetime import datetime
 from dateutil import parser
 from django.db import transaction
+from django.utils.timezone import datetime, get_default_timezone
+from dateutil import parser
+from django.utils import timezone
+from django.utils.timezone import datetime
+from dateutil import parser
 
 
 @csrf_exempt
@@ -354,10 +358,17 @@ def create_group_person(request):
         data = json.loads(request.body)
 
         try:
-            created = datetime.strptime(
-                data['created'], '%Y-%m-%dT%H:%M:%S.%f')
-            last_updated = datetime.strptime(
-                data['lastUpdated'], '%Y-%m-%dT%H:%M:%S.%f')
+            # created = datetime.strptime(
+            #     data['created'], '%Y-%m-%dT%H:%M:%S.%f')
+            # last_updated = datetime.strptime(
+            #     data['lastUpdated'], '%Y-%m-%dT%H:%M:%S.%f')
+            created = parser.parse(data['created'])
+            last_updated = parser.parse(data['lastUpdated'])
+
+            # # Convert the datetime objects to the default timezone
+            # created = timezone.make_aware(created, get_default_timezone())
+            # last_updated = timezone.make_aware(
+            #     last_updated, get_default_timezone())
 
             group_person = GroupPerson.objects.create(
                 studentId=data['studentId'],
