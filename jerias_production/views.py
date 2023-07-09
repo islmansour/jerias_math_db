@@ -24,12 +24,75 @@ from django.utils.timezone import datetime
 from dateutil import parser
 
 
+# @csrf_exempt
+# def group_list(request):
+#     groups = Group.objects.all()
+#     try:
+#         data = []
+#         for group in groups:
+#             serialized_teacher = None
+#             if group.teacher:
+#                 serialized_teacher = {
+#                     'id': group.teacher.id,
+#                     'lastName': group.teacher.lastName,
+#                     'firstName': group.teacher.firstName,
+#                     'startDate': group.teacher.startDate,
+#                     'status': group.teacher.status,
+#                     'phone': group.teacher.phone,
+#                     'email': group.teacher.email,
+#                     'parentPhone1': group.teacher.parentPhone1,
+#                     'parentPhone2': group.teacher.parentPhone2,
+#                     'dob': group.teacher.dob,
+#                     'userId': group.teacher.userId,
+#                 }
+#             # else:
+#             #     if group.teacherId:
+#             #         teacherObject = Person.objects.get(id=group.teacherId)
+#             #         serialized_teacher = {
+#             #             'id': teacherObject.id,
+#             #             'lastName': teacherObject.lastName,
+#             #             'firstName': teacherObject.firstName,
+#             #             'startDate': teacherObject.startDate,
+#             #             'status': teacherObject.status,
+#             #             'phone': teacherObject.phone,
+#             #             'email': teacherObject.email,
+#             #             'parentPhone1': teacherObject.parentPhone1,
+#             #             'parentPhone2': teacherObject.parentPhone2,
+#             #             'dob': teacherObject.dob,
+#             #             'userId': teacherObject.userId,
+#             #         }
+
+#             group_data = {
+#                 'id': group.id,
+#                 'name': group.name,
+#                 # 'teacherId': group.teacherId,
+#                 'startDate': group.startDate,
+#                 'endDate': group.endDate,
+#                 'weekDays': group.weekDays,
+#                 'type': group.type,
+#                 'status': group.status,
+#                 'teacher': serialized_teacher,
+#             }
+
+#             data.append(group_data)
+
+#         return JsonResponse(data, status=201, safe=False)
+#     except Exception as e:
+#         response_data = {
+#             'response_status': 'error',
+#             'message': str(e)
+#         }
+#         return JsonResponse(response_data, status=400, safe=False)
+
 @csrf_exempt
 def group_list(request):
     groups = Group.objects.all()
     try:
         data = []
         for group in groups:
+            # Retrieve GroupPerson objects related to the current group
+            group_people = GroupPerson.objects.filter(group=group)
+
             serialized_teacher = None
             if group.teacher:
                 serialized_teacher = {
@@ -45,34 +108,48 @@ def group_list(request):
                     'dob': group.teacher.dob,
                     'userId': group.teacher.userId,
                 }
-            else:
-                if group.teacherId:
-                    teacherObject = Person.objects.get(id=group.teacherId)
-                    serialized_teacher = {
-                        'id': teacherObject.id,
-                        'lastName': teacherObject.lastName,
-                        'firstName': teacherObject.firstName,
-                        'startDate': teacherObject.startDate,
-                        'status': teacherObject.status,
-                        'phone': teacherObject.phone,
-                        'email': teacherObject.email,
-                        'parentPhone1': teacherObject.parentPhone1,
-                        'parentPhone2': teacherObject.parentPhone2,
-                        'dob': teacherObject.dob,
-                        'userId': teacherObject.userId,
-                    }
 
             group_data = {
                 'id': group.id,
                 'name': group.name,
-                'teacherId': group.teacherId,
                 'startDate': group.startDate,
                 'endDate': group.endDate,
                 'weekDays': group.weekDays,
                 'type': group.type,
                 'status': group.status,
                 'teacher': serialized_teacher,
+                'groupStudents': []
             }
+
+            for group_person in group_people:
+                serialized_student = {
+                    'id': group_person.student.id,
+                    'lastName': group_person.student.lastName,
+                    'firstName': group_person.student.firstName,
+                    'startDate': group_person.student.startDate,
+                    'status': group_person.student.status,
+                    'phone': group_person.student.phone,
+                    'email': group_person.student.email,
+                    'parentPhone1': group_person.student.parentPhone1,
+                    'parentPhone2': group_person.student.parentPhone2,
+                    'dob': group_person.student.dob,
+                    'userId': group_person.student.userId,
+                }
+                serialized_group_person = {
+                    'id': group_person.id,
+                    'studentId': group_person.studentId,
+                    'groupId': group_person.groupId,
+                    'createdBy': group_person.createdBy.id,
+                    'created': group_person.created,
+                    'lastUpdated': group_person.lastUpdated,
+                    'lastUpdatedBy': group_person.lastUpdatedBy.id,
+                    'status': group_person.status,
+                    'student': serialized_student
+                    # 'group': group_person.group.id,
+                    # 'student': group_person.student.id,
+                }
+              #  serialized_group_person['student'].append(serialized_student)
+                group_data['groupStudents'].append(serialized_group_person)
 
             data.append(group_data)
 
@@ -103,7 +180,7 @@ def upsert_group(request):
 
             # Update the group fields with JSON values
             group.name = json_data.get('name')
-            group.teacherId = json_data.get('teacherId')
+            #group.teacherId = json_data.get('teacherId')
             group.startDate = json_data.get('startDate')
             group.endDate = json_data.get('endDate')
             group.weekDays = json_data.get('weekDays')
@@ -118,9 +195,9 @@ def upsert_group(request):
                 group.lastUpdatedBy = Person.objects.get(
                     id=json_data.get('lastUpdatedBy'))
 
-            if json_data.get('teacherId'):
-                group.teacher = Person.objects.get(
-                    id=json_data.get('teacherId'))
+            # if json_data.get('teacherId'):
+            #     group.teacher = Person.objects.get(
+            #         id=json_data.get('teacherId'))
 
             # Set the created and lastUpdated fields
             group.created = timezone.now()
@@ -136,7 +213,7 @@ def upsert_group(request):
                 'upsert_group': {
                     'id': group.id,
                     'name': group.name,
-                    'teacherId': group.teacherId,
+                    # 'teacherId': group.teacherId,
                     'startDate': group.startDate,
                     'endDate': group.endDate,
                     'weekDays': group.weekDays,
@@ -307,6 +384,8 @@ def group_person_list(request):
             serialized_person = serializers.serialize(
                 'python', [gp.student])[0]
             serialized_group = serializers.serialize('python', [gp.group])[0]
+            serialized_group_teacher = serializers.serialize(
+                'python', [gp.group.teacher])[0]
 
             serialized_gp = {
                 'id': gp.id,
@@ -320,15 +399,20 @@ def group_person_list(request):
                 'group': {
                     'id': serialized_group['pk'],
                     'name': serialized_group['fields']['name'],
-                    'teacherId': serialized_group['fields']['teacherId'],
                     'startDate': serialized_group['fields']['startDate'],
                     'endDate': serialized_group['fields']['endDate'],
                     'weekDays': serialized_group['fields']['weekDays'],
                     'type': serialized_group['fields']['type'],
                     'status': serialized_group['fields']['status'],
+                    'teacher': {
+                        'id': serialized_group_teacher['pk'],
+                        'lastName': serialized_group_teacher['fields']['lastName'],
+                        'firstName': serialized_group_teacher['fields']['firstName'],
+                        # Include any other fields you want from the teacher model
+                    }
                 },
                 'student': {
-                    'id': serialized_person['pk'],  # Add 'id' field
+                    'id': serialized_person['pk'],
                     'lastName': serialized_person['fields']['lastName'],
                     'firstName': serialized_person['fields']['firstName'],
                     'startDate': serialized_person['fields']['startDate'],
@@ -339,7 +423,8 @@ def group_person_list(request):
                     'parentPhone2': serialized_person['fields']['parentPhone2'],
                     'dob': serialized_person['fields']['dob'],
                     'userId': serialized_person['fields']['userId'],
-                }}
+                }
+            }
             data.append(serialized_gp)
         return JsonResponse(data, status=201, safe=False)
 
@@ -385,6 +470,9 @@ def create_group_person(request):
             # Convert GroupPerson object to dictionary
             group_person_dict = model_to_dict(group_person)
             group_person_dict['group'] = model_to_dict(group_person.group)
+            group_person_dict['group']['teacher'] = model_to_dict(
+                group_person.group.teacher)
+
             group_person_dict['student'] = model_to_dict(group_person.student)
 
             # Return the JSON response with the created data and success status
@@ -392,6 +480,7 @@ def create_group_person(request):
                 'response_status': 'success',
                 'group_person': group_person_dict
             }
+            print(group_person_dict)
             return JsonResponse(response_data, status=201)
 
         except Exception as e:
@@ -417,7 +506,7 @@ def search_group_events(request):
         from_date = request.GET.get('from_date')
         to_date = request.GET.get('to_date')
 
-        queryset = GroupEvent.objects.all()
+        queryset = GroupEvent.objects.all().order_by('-created')
 
         if group_id:
             queryset = queryset.filter(group_id=group_id)

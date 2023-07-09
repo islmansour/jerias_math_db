@@ -21,7 +21,7 @@ class Person(models.Model):
 
 class Group(models.Model):
     name = models.CharField(max_length=255)
-    teacherId = models.IntegerField(null=True)
+    #teacherId = models.IntegerField(null=True)
     startDate = models.DateTimeField()
     endDate = models.DateTimeField()
     weekDays = models.CharField(max_length=255)
