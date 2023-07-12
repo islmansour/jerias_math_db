@@ -17,26 +17,37 @@ from django.contrib import admin
 from django.urls import path
 
 from jerias_production import views
+from jerias_production.views.general_view import get_lookup_table_data
+from jerias_production.views.payments_view import get_purchase_payments
+from jerias_production.views.person_view import add_person, app_user_list, person_list
+from jerias_production.views.group_view import group_list, upsert_group, group_person_list, create_group_person
+from jerias_production.views.event_view import search_group_events, add_group_event
+from jerias_production.views.attendance_view import create_student_attendance, get_student_attendance_by_group_event, search_student_attendance_by_student
+from jerias_production.views.purchases_view import purchases_by_student
 
 urlpatterns = [
-    path('add-person/', views.add_person, name='add_person'),
-    path('groups/', views.group_list, name='group_list'),
-    path('people/', views.person_list, name='person_list'),
-    path('app_users/', views.app_user_list, name='app_user_list'),
-    path('group_people/', views.group_person_list, name='group_person_list'),
-    path('create-group-person/', views.create_group_person,
-         name='create_group_person'),
-    path('group-event/search/', views.search_group_events,
-         name='search_group_events'),
-    path('group-event/add/', views.add_group_event, name='add_group_event'),
-    path('group/upsert/', views.upsert_group, name='upsert_group'),
-    path('create-student-attendance/', views.create_student_attendance,
+    # Existing URL patterns
+    path('add-person/', add_person, name='add_person'),
+    path('groups/', group_list, name='group_list'),
+    path('people/', person_list, name='person_list'),
+    path('app_users/', app_user_list, name='app_user_list'),
+    path('group_people/', group_person_list, name='group_person_list'),
+    path('create-group-person/', create_group_person, name='create_group_person'),
+    path('group-event/search/', search_group_events, name='search_group_events'),
+    path('group-event/add/', add_group_event, name='add_group_event'),
+    path('group/upsert/', upsert_group, name='upsert_group'),
+    path('create-student-attendance/', create_student_attendance,
          name='create_student_attendance'),
-    path('get-student-attendance-by-group-event/', views.get_student_attendance_by_group_event,
+    path('get-student-attendance-by-group-event/', get_student_attendance_by_group_event,
          name='get_student_attendance_by_group_event'),
-
-    path('search-student-attendance-by-student/', views.search_student_attendance_by_student,
+    path('search-student-attendance-by-student/', search_student_attendance_by_student,
          name='search_student_attendance_by_student'),
+    path('purchases/search/', purchases_by_student, name='purchases_by_student'),
+    path('purchase/<int:purchase_id>/payments/',
+         get_purchase_payments, name='purchase_payments'),
+    path('lookup-table-data/', get_lookup_table_data,
+         name='lookup_table_data'),
 
     path('admin/', admin.site.urls),
+    # Other URL patterns
 ]
