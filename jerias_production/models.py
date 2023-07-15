@@ -45,6 +45,7 @@ class Person(models.Model):
     parentPhone2 = models.CharField(max_length=255, null=True)
     dob = models.DateTimeField(null=True)
     userId = models.CharField(max_length=255, null=True)
+    type = models.IntegerField(null=True, default=0)
 
     def to_json(self):
         return {
@@ -58,7 +59,11 @@ class Person(models.Model):
             'parentPhone2': self.parentPhone2,
             'dob': self.dob.isoformat() if self.dob else None,
             'userId': self.userId,
+            'type': self.type,
         }
+
+    def __str__(self):
+        return f"{self.pk}: {self.firstName}  {self.lastName} "
 
 
 class Group(models.Model):
@@ -105,6 +110,9 @@ class Group(models.Model):
             'lastUpdatedBy': self.lastUpdatedBy.to_json() if self.lastUpdatedBy else None,
             'teacher': self.teacher.to_json() if self.teacher else None,
         }
+
+    def __str__(self):
+        return f"{self.pk}: {self.name}  "
 
 
 class AppUser(models.Model):
@@ -307,7 +315,7 @@ class Payment(models.Model):
         ('cheque', 'Cheque'),
         ('bit', 'Bit'),
     )
-    paymentType = models.CharField(max_length=20, choices=PAYMENT_TYPES)
+    paymentType = models.IntegerField(null=True)
     chequeNumber = models.CharField(max_length=50, blank=True)
     chequeBank = models.CharField(max_length=100, blank=True)
     chequeDate = models.DateTimeField(null=True)

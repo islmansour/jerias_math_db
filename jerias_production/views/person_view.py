@@ -13,7 +13,7 @@ def person_list(request):
         data = [{'id': person.id, 'lastName': person.lastName, 'firstName': person.firstName, 'startDate': person.startDate,
                 'status': person.status, 'phone': person.phone, 'email': person.email,
                  'parentPhone1': person.parentPhone1, 'parentPhone2': person.parentPhone2,
-                 'dob': person.dob, 'userId': person.userId} for person in people]
+                 'dob': person.dob, 'userId': person.userId, 'type': person.type} for person in people]
 
         return JsonResponse(data, status=201, safe=False)
 
@@ -41,6 +41,8 @@ def add_person(request):
         parent_phone2 = data['parentPhone2']
         dob = data['dob']
         user_id = data['userId']
+        type = data['type']
+
         try:
             # Create a new Person instance with the provided data
             person = Person.objects.create(
@@ -53,7 +55,8 @@ def add_person(request):
                 parentPhone1=parent_phone1,
                 parentPhone2=parent_phone2,
                 dob=dob,
-                userId=user_id
+                userId=user_id,
+                type=type
             )
 
             # Create a JSON object containing the created data and success status
@@ -69,7 +72,8 @@ def add_person(request):
                 'parentPhone1': person.parentPhone1,
                 'parentPhone2': person.parentPhone2,
                 'dob': person.dob,
-                'userId': person.userId
+                'userId': person.userId,
+                'type': person.type,
             }
 
             # Return the JSON response with the created data and success status
@@ -94,13 +98,13 @@ def app_user_list(request):
         data = [{'uid': app_user.uid, 'token': app_user.token, 'active': app_user.active,
                 'contactId': app_user.contactId, 'created_by': app_user.created_by,
                  'userType': app_user.userType, 'language': app_user.language,
-                 'admin': app_user.admin, 'person': {
-                     'lastName': app_user.person.lastName, 'firstName': app_user.person.firstName,
-                     'startDate': app_user.person.startDate, 'status': app_user.person.status,
-                     'phone': app_user.person.phone, 'email': app_user.person.email,
-                     'parentPhone1': app_user.person.parentPhone1, 'parentPhone2': app_user.person.parentPhone2,
-                     'dob': app_user.person.dob, 'userId': app_user.person.userId
-                 }} for app_user in app_users]
+                 'admin': app_user.admin, 'person': {'type': app_user.person.type,
+                                                     'lastName': app_user.person.lastName, 'firstName': app_user.person.firstName,
+                                                     'startDate': app_user.person.startDate, 'status': app_user.person.status,
+                                                     'phone': app_user.person.phone, 'email': app_user.person.email,
+                                                     'parentPhone1': app_user.person.parentPhone1, 'parentPhone2': app_user.person.parentPhone2,
+                                                     'dob': app_user.person.dob, 'userId': app_user.person.userId
+                                                     }} for app_user in app_users]
         return JsonResponse(data, status=201, safe=False)
 
     except Exception as e:

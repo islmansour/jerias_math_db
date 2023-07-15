@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib import admin
-from .models import Account, GroupEvent, GroupPerson, LookupTable, Person, AppUser, Purchase, StudentAttendance
+from .models import Group, Account, GroupEvent, GroupPerson, LookupTable, Payment, Person, AppUser, Purchase, StudentAttendance
 
 
 admin.site.register(Account)
@@ -10,6 +10,8 @@ admin.site.register(AppUser)
 admin.site.register(GroupEvent)
 admin.site.register(StudentAttendance)
 admin.site.register(Purchase)
+admin.site.register(Payment)
+admin.site.register(Group)
 
 
 class PersonAdminForm(forms.ModelForm):
@@ -23,11 +25,12 @@ class PersonAdminForm(forms.ModelForm):
     parentPhone2 = forms.CharField(max_length=255, required=False)
     dob = forms.DateTimeField(required=False)
     userId = forms.CharField(max_length=255, required=False)
+    type = forms.IntegerField(required=False)
 
     class Meta:
         model = Person
         fields = ['lastName', 'firstName', 'startDate', 'status', 'phone',
-                  'email', 'parentPhone1', 'parentPhone2', 'dob', 'userId']
+                  'email', 'parentPhone1', 'parentPhone2', 'dob', 'userId', 'type']
 
 
 @admin.register(Person)

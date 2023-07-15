@@ -82,7 +82,6 @@ def add_group_event(request):
     try:
         # Parse the JSON data from the request body
         json_data = json.loads(request.body)
-        print('-1-')
         # Extract the required fields from the JSON data
         created = json_data['created']
         last_updated = json_data['lastUpdated']
@@ -97,7 +96,6 @@ def add_group_event(request):
         created_by = json_data.get('createdBy')
         last_updated_by = json_data.get('lastUpdatedBy')
         # Perform additional validations or processing as needed
-        print('-2-')
 
         # Create the GroupEvent instance
         group_event = GroupEvent.objects.create(
@@ -108,7 +106,6 @@ def add_group_event(request):
             lastUpdatedBy_id=last_updated_by_id,
             group_id=group_id
         )
-        print('-3-')
 
         # Return a JSON response with the created GroupEvent data
         group_event_result = {
@@ -120,7 +117,6 @@ def add_group_event(request):
             'lastUpdatedBy': last_updated_by,
             'group': groupData
         }
-        print('-4-')
 
         response_data = {
             'response_status': 'success',
