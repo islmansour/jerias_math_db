@@ -1,6 +1,9 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from jerias_production.models import Payment, Purchase
+from jerias_production.models import Payment, Person, Purchase
+from django.utils import timezone
+
+import json
 
 
 @csrf_exempt
@@ -11,7 +14,6 @@ def purchases_by_student(request):
         data = []
 
         for purchase in purchases:
-            print('--------------------- foiund ------------------')
             payments = Payment.objects.filter(purchase=purchase)
             payment_data = []
 
@@ -43,3 +45,82 @@ def purchases_by_student(request):
             'message': str(e)
         }
         return JsonResponse(response_data, status=400, safe=False)
+
+
+@csrf_exempt
+def create_update_purchase(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            purchase_id = data.get('id')
+            print(purchase_id)
+            if purchase_id:
+                # Update existing Purchase record
+                try:
+                    purchase = Purchase.objects.get(id=purchase_id)
+                except Purchase.DoesNotExist:
+                    return JsonResponse({'success': False, 'message': 'Purchase not found'}, status=404)
+            else:
+                print('new purchase')
+                # Create a new Purchase record
+                purchase = Purchase()
+
+            # Update the Purchase object with the fields from the JSON data
+            createdBy_data = data.get('createdBy')
+            if createdBy_data:
+                createdBy_id = createdBy_data.get('id')
+                if createdBy_id:
+                    try:
+                        createdBy = Person.objects.get(id=createdBy_id)
+                        purchase.createdBy = createdBy
+                    except Person.DoesNotExist:
+                        return JsonResponse({'success': False, 'message': 'createdBy not found'}, status=404)
+
+            if not purchase_id:
+                purchase.created = timezone.now()
+
+            purchase.lastUpdated = timezone.now()
+
+            lastupdatedby_data = data.get('lastUpdatedBy')
+            if lastupdatedby_data:
+                lastupdBy_id = lastupdatedby_data.get('id')
+                if lastupdBy_id:
+                    try:
+                        lastupdby = Person.objects.get(id=lastupdBy_id)
+                        purchase.lastUpdatedBy = lastupdby
+                    except Person.DoesNotExist:
+                        return JsonResponse({'success': False, 'message': 'Last updated by not found'}, status=404)
+
+            if data.get('status'):
+                purchase.status = data.get('status')
+
+            student_data = data.get('student')
+            if student_data:
+                student_id = student_data.get('id')
+                if student_id:
+                    try:
+                        student = Person.objects.get(id=student_id)
+                        purchase.student = student
+                    except Person.DoesNotExist:
+                        return JsonResponse({'success': False, 'message': 'Student not found'}, status=404)
+
+            purchase.amount = data.get('amount')
+            purchase.maxAttendances = data.get('maxAttendances')
+
+            # Save the Purchase object
+            purchase.save()
+
+            response_data = {
+                'success': True,
+                'message': 'Purchase created/updated successfully'
+            }
+            return JsonResponse(response_data, status=201)
+        except Exception as e:
+            response_data = {
+                'success': False,
+                'message': str(e)
+            }
+            print(response_data)
+            return JsonResponse(response_data, status=400)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=400)

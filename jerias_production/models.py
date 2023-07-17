@@ -11,7 +11,7 @@ class Account(models.Model):
     owner = models.ForeignKey(
         'Person',
         null=True,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         related_name='account_owner_data'
 
     )
@@ -77,7 +77,7 @@ class Group(models.Model):
         'Person',
         null=True,
         blank=True,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         related_name='created_group'
     )
     created = models.DateTimeField(default=timezone.now)
@@ -86,13 +86,13 @@ class Group(models.Model):
         'Person',
         null=True,
         blank=True,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         related_name='updated_group'
     )
     teacher = models.ForeignKey(
         'Person',
         null=True,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         related_name='group_teacher'
     )
 
@@ -124,7 +124,7 @@ class AppUser(models.Model):
         'Person',
         null=True,
         blank=True,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         related_name='created_appuser'
     )
     created = models.DateTimeField(default=timezone.now)
@@ -133,7 +133,7 @@ class AppUser(models.Model):
         'Person',
         null=True,
         blank=True,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         related_name='updated_appuser'
     )
     userType = models.CharField(max_length=255)
@@ -142,7 +142,7 @@ class AppUser(models.Model):
     person = models.OneToOneField(
         'Person',
         null=True,
-        on_delete=models.DO_NOTHING
+        on_delete=models.SET_NULL
     )
 
     def to_json(self):
@@ -169,7 +169,7 @@ class GroupPerson(models.Model):
         'Person',
         null=True,
         blank=True,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         related_name='created_groupperson'
     )
     created = models.DateTimeField(default=timezone.now)
@@ -178,20 +178,20 @@ class GroupPerson(models.Model):
         'Person',
         null=True,
         blank=True,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         related_name='updated_groupperson'
     )
     status = models.IntegerField(null=True)
     group = models.ForeignKey(
         'Group',
         null=True,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         related_name='group_people'
     )
     student = models.ForeignKey(
         'Person',
         null=True,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         related_name='group_participations'
     )
 
@@ -219,18 +219,18 @@ class GroupEvent(models.Model):
 
     createdBy = models.ForeignKey(
         'Person',
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         null=True,
         related_name='created_events'
     )
     lastUpdatedBy = models.ForeignKey(
         'Person',
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         null=True,
         related_name='updated_events'
     )
 
-    group = models.ForeignKey('Group', on_delete=models.DO_NOTHING, null=True)
+    group = models.ForeignKey('Group', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return f"GroupEvent {self.pk}"
@@ -274,7 +274,7 @@ class Purchase(models.Model):
     lastUpdated = models.DateTimeField(null=True)
     lastUpdatedBy = models.ForeignKey(
         'Person', on_delete=models.CASCADE, related_name='purchases_updated')
-    status = models.IntegerField(null=True)
+    status = models.IntegerField(null=True, default=0)
     student = models.ForeignKey(
         'Person', on_delete=models.CASCADE, related_name='purchases')
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True)

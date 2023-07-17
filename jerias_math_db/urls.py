@@ -23,7 +23,7 @@ from jerias_production.views.person_view import add_person, app_user_list, perso
 from jerias_production.views.group_view import group_list, upsert_group, group_person_list, create_group_person
 from jerias_production.views.event_view import search_group_events, add_group_event
 from jerias_production.views.attendance_view import create_student_attendance, get_student_attendance_by_group_event, search_student_attendance_by_student
-from jerias_production.views.purchases_view import purchases_by_student
+from jerias_production.views.purchases_view import create_update_purchase, purchases_by_student
 
 urlpatterns = [
     # Existing URL patterns
@@ -47,7 +47,8 @@ urlpatterns = [
          get_purchase_payments, name='purchase_payments'),
     path('lookup-table-data/', get_lookup_table_data,
          name='lookup_table_data'),
-
+    path('purchase/upsert/', create_update_purchase,
+         name='create_update_purchase'),
     path('admin/', admin.site.urls),
     # Other URL patterns
 ]
