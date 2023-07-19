@@ -25,6 +25,8 @@ class Account(models.Model):
 
     def to_json(self):
         return {
+            'id': self.pk,
+
             'name': self.name,
             'startDate': self.startDate.isoformat() if self.startDate else None,
             'status': self.status,
@@ -49,6 +51,8 @@ class Person(models.Model):
 
     def to_json(self):
         return {
+            'id': self.pk,
+
             'lastName': self.lastName,
             'firstName': self.firstName,
             'startDate': self.startDate.isoformat() if self.startDate else None,
@@ -98,6 +102,8 @@ class Group(models.Model):
 
     def to_json(self):
         return {
+            'id': self.pk,
+
             'name': self.name,
             'startDate': self.startDate.isoformat(),
             'endDate': self.endDate.isoformat(),
@@ -200,6 +206,8 @@ class GroupPerson(models.Model):
 
     def to_json(self):
         return {
+            'id': self.pk,
+
             'studentId': self.studentId,
             'groupId': self.groupId,
             'createdBy': self.createdBy.to_json() if self.createdBy else None,
@@ -213,8 +221,8 @@ class GroupPerson(models.Model):
 
 
 class GroupEvent(models.Model):
-    created = models.DateTimeField(null=True)
-    lastUpdated = models.DateTimeField(null=True)
+    created = models.DateTimeField(null=True, default=timezone.now)
+    lastUpdated = models.DateTimeField(null=True, default=timezone.now)
     status = models.IntegerField(null=True)
 
     createdBy = models.ForeignKey(
@@ -237,6 +245,7 @@ class GroupEvent(models.Model):
 
     def to_json(self):
         return {
+            'id': self.pk,
             'created': self.created.isoformat() if self.created else None,
             'lastUpdated': self.lastUpdated.isoformat() if self.lastUpdated else None,
             'status': self.status,
@@ -248,8 +257,8 @@ class GroupEvent(models.Model):
 
 class StudentAttendance(models.Model):
     createdBy = models.IntegerField()
-    created = models.DateTimeField()
-    lastUpdated = models.DateTimeField()
+    created = models.DateTimeField(default=timezone.now)
+    lastUpdated = models.DateTimeField(default=timezone.now)
     lastUpdatedBy = models.IntegerField()
     status = models.IntegerField()
     groupEvent = models.ForeignKey('GroupEvent', on_delete=models.CASCADE)
@@ -257,6 +266,7 @@ class StudentAttendance(models.Model):
 
     def to_json(self):
         return {
+            'id': self.pk,
             'createdBy': self.createdBy,
             'created': self.created.isoformat(),
             'lastUpdated': self.lastUpdated.isoformat(),
@@ -269,11 +279,11 @@ class StudentAttendance(models.Model):
 
 class Purchase(models.Model):
     createdBy = models.ForeignKey(
-        'Person', on_delete=models.CASCADE, related_name='purchases_created')
-    created = models.DateTimeField(null=True)
-    lastUpdated = models.DateTimeField(null=True)
+        'Person', on_delete=models.CASCADE, related_name='purchases_created', null=True)
+    created = models.DateTimeField(null=True, default=timezone.now)
+    lastUpdated = models.DateTimeField(null=True, default=timezone.now)
     lastUpdatedBy = models.ForeignKey(
-        'Person', on_delete=models.CASCADE, related_name='purchases_updated')
+        'Person', on_delete=models.CASCADE, related_name='purchases_updated', null=True)
     status = models.IntegerField(null=True, default=0)
     student = models.ForeignKey(
         'Person', on_delete=models.CASCADE, related_name='purchases')
@@ -282,8 +292,26 @@ class Purchase(models.Model):
     account = models.ForeignKey('Account', on_delete=models.CASCADE, null=True)
     autoGenerate = models.BooleanField(default=False)
 
+    @property
+    def noMoreEventsAllowed(self):
+        purchaseAttendances = PurchaseAttendance.objects.filter(purchase=self).filter(
+            studentAttendance__status__in=[0, 1])
+        return self.maxAttendances <= len(purchaseAttendances)
+
+    @property
+    def allPurchaseAttendancesB(self):
+        purchaseAttendances = PurchaseAttendance.objects.filter(purchase=self)
+        return len(purchaseAttendances)
+
+    @property
+    def purchaseAttendancesBillable(self):
+        purchaseAttendances = PurchaseAttendance.objects.filter(purchase=self).filter(
+            studentAttendance__status__in=[0, 1])
+        return len(purchaseAttendances)
+
     def to_json(self):
         return {
+            'id': self.pk,
             'createdBy': self.createdBy.to_json() if self.createdBy else None,
             'created': self.created.isoformat() if self.created else None,
             'lastUpdated': self.lastUpdated.isoformat() if self.lastUpdated else None,
@@ -293,8 +321,7 @@ class Purchase(models.Model):
             'amount': str(self.amount),
             'maxAttendances': self.maxAttendances,
             'account': self.account.to_json() if self.account else None,
-            'autoGenerate': self.autoGenerate
-
+            'autoGenerate': self.autoGenerate,
         }
 
 
@@ -323,6 +350,7 @@ class Payment(models.Model):
 
     def to_json(self):
         return {
+            'id': self.pk,
             'purchase': self.purchase.to_json(),
             'amount': str(self.amount),
             'created': self.created.isoformat(),
@@ -364,3 +392,18 @@ class LookupTable(models.Model):
 
     def __str__(self):
         return f"LOV {self.type} {self.value} {self.lang}"
+
+
+class PurchaseAttendance(models.Model):
+    purchase = models.ForeignKey('Purchase', on_delete=models.CASCADE)
+    studentAttendance = models.ForeignKey(
+        'StudentAttendance', on_delete=models.CASCADE)
+    created = models.DateTimeField(default=timezone.now)
+
+    def to_json(self):
+        return {
+            'id': self.pk,
+            'purchase': self.purchase.to_json(),
+            'studentAttendance': self.studentAttendance.to_json(),
+            'created': self.created.isoformat()
+        }

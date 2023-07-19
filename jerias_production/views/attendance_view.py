@@ -2,12 +2,13 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.http import JsonResponse
-from jerias_production.models import Person, GroupEvent, StudentAttendance
+from jerias_production.models import Person, GroupEvent, Purchase, PurchaseAttendance, StudentAttendance
 from django.utils import timezone
 from dateutil import parser
 from dateutil import parser
 from django.utils import timezone
 from dateutil import parser
+from django.db.models import Count
 
 
 @csrf_exempt
@@ -106,6 +107,43 @@ def create_student_attendance(request):
                 'student_attendance': serialized_student_attendance,
                 #   'group_event': serialized_group_event,
             }
+
+            if(student_attendance_id == -1):
+                student_attendances = StudentAttendance.objects.filter(
+                    student=student)
+                student_attendance_ids = student_attendances.values_list(
+                    'id', flat=True)
+
+                purchase_attendances = PurchaseAttendance.objects.filter(
+                    studentAttendance__in=student_attendance_ids)
+
+                print(len(purchase_attendances))
+
+            # if len(purchase_attendances) == 0:
+                allPurchases = Purchase.objects.filter(student=student)
+                selectedPurchase = None
+                for purchase in allPurchases:
+                    if purchase.noMoreEventsAllowed == False:
+                        selectedPurchase = purchase
+                        break
+
+                if selectedPurchase:
+                    PurchaseAttendance.objects.create(
+                        studentAttendance=student_attendance, purchase=selectedPurchase)
+                else:
+                    selectedPurchase = Purchase.objects.create(
+                        amount=0,
+                        maxAttendances=8,
+                        student=student,
+                        autoGenerate=True,
+                        status=0,
+                        createdBy=None,
+                        lastUpdatedBy=None
+
+                    )
+                    if selectedPurchase:
+                        PurchaseAttendance.objects.create(
+                            studentAttendance=student_attendance, purchase=selectedPurchase)
 
             return JsonResponse(response_data, status=201, safe=False)
 

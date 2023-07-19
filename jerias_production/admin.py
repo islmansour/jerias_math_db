@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib import admin
-from .models import Group, Account, GroupEvent, GroupPerson, LookupTable, Payment, Person, AppUser, Purchase, StudentAttendance
+from .models import Group, Account, GroupEvent, GroupPerson, LookupTable, Payment, Person, AppUser, Purchase, PurchaseAttendance, StudentAttendance
 
 
 admin.site.register(Account)
@@ -8,10 +8,38 @@ admin.site.register(Account)
 #
 admin.site.register(AppUser)
 admin.site.register(GroupEvent)
-admin.site.register(StudentAttendance)
-admin.site.register(Purchase)
 admin.site.register(Payment)
 admin.site.register(Group)
+
+
+class StudentAttendanceAdmin(admin.ModelAdmin):
+    list_display = ['id', 'createdBy', 'created', 'lastUpdated',
+                    'lastUpdatedBy', 'status', 'groupEvent', 'student']
+
+
+admin.site.register(StudentAttendance, StudentAttendanceAdmin)
+
+
+class PurchaseAdmin(admin.ModelAdmin):
+    list_display = ['id', 'createdBy', 'created', 'lastUpdated', 'lastUpdatedBy', 'status',
+                    'student', 'amount', 'maxAttendances', 'account', 'autoGenerate', 'noMoreEventsAllowed',
+                    'allPurchaseAttendancesB', 'purchaseAttendancesBillable']
+
+    # Optionally, you can define a method to display the value of the @property 'noMoreEventsAllowed'
+    def noMoreEventsAllowed(self, obj):
+        return obj.noMoreEventsAllowed
+    # If 'noMoreEventsAllowed' is a boolean property
+    noMoreEventsAllowed.boolean = True
+
+
+admin.site.register(Purchase, PurchaseAdmin)
+
+
+class PurchaseAttendanceAdmin(admin.ModelAdmin):
+    list_display = ['id', 'purchase', 'studentAttendance', 'created']
+
+
+admin.site.register(PurchaseAttendance, PurchaseAttendanceAdmin)
 
 
 class PersonAdminForm(forms.ModelForm):

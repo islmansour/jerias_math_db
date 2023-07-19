@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from jerias_production.models import Payment, Person, Purchase
+from jerias_production.models import Payment, Person, Purchase, PurchaseAttendance
 from django.utils import timezone
 
 import json
@@ -14,6 +14,15 @@ def purchases_by_student(request):
         data = []
 
         for purchase in purchases:
+            # find all purchase attendance
+            listOfPurchaseAttendance = PurchaseAttendance.objects.filter(
+                purchase=purchase)
+            purchaseAttendance_data = []
+
+            for purchaseAttendance in listOfPurchaseAttendance:
+                purchaseAttendance_data.append(purchaseAttendance.to_json())
+
+            # find all purchase payments
             payments = Payment.objects.filter(purchase=purchase)
             payment_data = []
 
@@ -33,6 +42,7 @@ def purchases_by_student(request):
                 'maxAttendances': purchase.maxAttendances,
                 'account': purchase.account.to_json() if purchase.account else None,
                 'payments': payment_data,
+                'purchaseAttendance': purchaseAttendance_data,
             }
 
             data.append(purchase_data)
@@ -53,7 +63,7 @@ def create_update_purchase(request):
         try:
             data = json.loads(request.body)
             purchase_id = data.get('id')
-            print(purchase_id)
+
             if purchase_id:
                 # Update existing Purchase record
                 try:
@@ -61,7 +71,6 @@ def create_update_purchase(request):
                 except Purchase.DoesNotExist:
                     return JsonResponse({'success': False, 'message': 'Purchase not found'}, status=404)
             else:
-                print('new purchase')
                 # Create a new Purchase record
                 purchase = Purchase()
 
