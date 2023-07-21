@@ -40,8 +40,9 @@ urlpatterns = [
          name='create_student_attendance'),
     path('get-student-attendance-by-group-event/', get_student_attendance_by_group_event,
          name='get_student_attendance_by_group_event'),
-    path('search-student-attendance-by-student/', search_student_attendance_by_student,
+    path('search_student_attendance_by_student/', search_student_attendance_by_student,
          name='search_student_attendance_by_student'),
+
     path('purchases/search/', purchases_by_student, name='purchases_by_student'),
     path('purchase/<int:purchase_id>/payments/',
          get_purchase_payments, name='purchase_payments'),

@@ -74,7 +74,7 @@ def create_student_attendance(request):
                 'lastUpdated': student_attendance.lastUpdated,
                 'lastUpdatedBy': student_attendance.lastUpdatedBy,
                 'status': student_attendance.status,
-                'groupEvent': student_attendance.groupEvent_id,
+                #  'groupEvent': student_attendance.groupEvent_id,
                 'groupEvent': {
                     'id': group_event.id,
                     'created': group_event.created,
@@ -243,7 +243,7 @@ def search_student_attendance_by_student(request):
         # Search for StudentAttendance records based on the provided student
         try:
             student_attendance_list = StudentAttendance.objects.filter(
-                student_id=student_id)
+                student_id=student_id).order_by('-created')
 
             # Create a list of dictionaries containing the data of each StudentAttendance object
             student_attendance_data = []
@@ -268,7 +268,7 @@ def search_student_attendance_by_student(request):
                     'lastUpdated': attendance.lastUpdated,
                     'lastUpdatedBy': attendance.lastUpdatedBy,
                     'status': attendance.status,
-                    'groupEvent': attendance.groupEvent.id,
+                    'groupEvent': attendance.groupEvent.to_json(),
                     'student': student_data
                 }
                 student_attendance_data.append(attendance_data)
@@ -278,7 +278,7 @@ def search_student_attendance_by_student(request):
                 'message': 'StudentAttendance objects retrieved successfully',
                 'student_attendance': student_attendance_data
             }
-            return JsonResponse(response_data, status=200, safe=False)
+            return JsonResponse(student_attendance_data, status=200, safe=False)
 
         except Exception as e:
             response_data = {

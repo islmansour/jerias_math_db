@@ -62,7 +62,16 @@ class PersonAdminForm(forms.ModelForm):
 
 
 @admin.register(Person)
-class PersoneAdmin(admin.ModelAdmin):
+class PersonAdmin(admin.ModelAdmin):
+    # List of fields to be displayed in the admin list view
+    list_display = ('lastName', 'firstName', 'startDate', 'status', 'phone',
+                    'email', 'parentPhone1', 'parentPhone2', 'dob', 'userId', 'type')
+
+    # Optional: Add any other configurations you want, such as search fields, filters, etc.
+    search_fields = ('lastName', 'firstName', 'email')
+    list_filter = ('status', 'type')
+    ordering = ('lastName', 'firstName')
+
     form = PersonAdminForm
 
 
