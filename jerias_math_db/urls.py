@@ -18,8 +18,8 @@ from django.urls import path
 
 from jerias_production import views
 from jerias_production.views.general_view import get_lookup_table_data
-from jerias_production.views.payments_view import get_purchase_payments
-from jerias_production.views.person_view import add_person, app_user_list, person_list
+from jerias_production.views.payments_view import create_payment, get_purchase_payments
+from jerias_production.views.person_view import add_person, app_user_list, person_list, students_list_stream
 from jerias_production.views.group_view import group_list, upsert_group, group_person_list, create_group_person
 from jerias_production.views.event_view import search_group_events, add_group_event
 from jerias_production.views.attendance_view import create_student_attendance, get_student_attendance_by_group_event, search_student_attendance_by_student
@@ -30,6 +30,7 @@ urlpatterns = [
     path('add-person/', add_person, name='add_person'),
     path('groups/', group_list, name='group_list'),
     path('people/', person_list, name='person_list'),
+    path('studentsList/', students_list_stream, name='students_list_stream'),
     path('app_users/', app_user_list, name='app_user_list'),
     path('group_people/', group_person_list, name='group_person_list'),
     path('create-group-person/', create_group_person, name='create_group_person'),
@@ -50,6 +51,7 @@ urlpatterns = [
          name='lookup_table_data'),
     path('purchase/upsert/', create_update_purchase,
          name='create_update_purchase'),
+    path('create_payment/', create_payment, name='create_payment'),
     path('admin/', admin.site.urls),
     # Other URL patterns
 ]

@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, StreamingHttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 import json
@@ -25,43 +25,13 @@ def person_list(request):
         return JsonResponse(response_data, status=400, safe=False)
 
 
-def add_person(request):
-    if request.method == 'POST':
-        # Retrieve the data from the request body
-        data = json.loads(request.body)
+@csrf_exempt
+def students_list_stream(request):
+    people = Person.objects.filter(type=0)
 
-        # Retrieve the values using camel case field names
-        last_name = data['lastName']
-        first_name = data['firstName']
-        start_date = data['startDate']
-        status = data['status']
-        phone = data['phone']
-        email = data['email']
-        parent_phone1 = data['parentPhone1']
-        parent_phone2 = data['parentPhone2']
-        dob = data['dob']
-        user_id = data['userId']
-        type = data['type']
-
-        try:
-            # Create a new Person instance with the provided data
-            person = Person.objects.create(
-                lastName=last_name,
-                firstName=first_name,
-                startDate=start_date,
-                status=status,
-                phone=phone,
-                email=email,
-                parentPhone1=parent_phone1,
-                parentPhone2=parent_phone2,
-                dob=dob,
-                userId=user_id,
-                type=type
-            )
-
-            # Create a JSON object containing the created data and success status
-            response_data = {
-                'response_status': 'success',
+    def generate_data():
+        for person in people:
+            yield JsonResponse({
                 'id': person.id,
                 'lastName': person.lastName,
                 'firstName': person.firstName,
@@ -73,11 +43,71 @@ def add_person(request):
                 'parentPhone2': person.parentPhone2,
                 'dob': person.dob,
                 'userId': person.userId,
-                'type': person.type,
-            }
+                'type': person.type
+            })
 
-            # Return the JSON response with the created data and success status
-            return JsonResponse(response_data, status=201, safe=False)
+    response = StreamingHttpResponse(
+        generate_data(), content_type='application/json')
+    return response
+
+
+@csrf_exempt
+def add_person(request):
+    if request.method == 'POST':
+        # Retrieve the data from the request body
+        data = json.loads(request.body)
+
+        # Retrieve the values using camel case field names
+        phone = data['phone']
+
+        try:
+            # Try to find the person with the provided phone number
+            person = Person.objects.filter(phone=phone).first()
+
+            if person:
+                # If the person with the provided phone exists, update their data
+                person.lastName = data.get('lastName', person.lastName)
+                person.firstName = data.get('firstName', person.firstName)
+                person.startDate = data.get('startDate', person.startDate)
+                person.status = data.get('status', person.status)
+                person.email = data.get('email', person.email)
+                person.parentPhone1 = data.get(
+                    'parentPhone1', person.parentPhone1)
+                person.parentPhone2 = data.get(
+                    'parentPhone2', person.parentPhone2)
+                person.dob = data.get('dob', person.dob)
+                person.userId = data.get('userId', person.userId)
+                person.type = data.get('type', person.type)
+                person.save()
+
+                response_data = {
+                    'response_status': 'success',
+                    'message': 'Person updated successfully',
+                    'id': person.id,
+                }
+                return JsonResponse(response_data, status=200, safe=False)
+            else:
+                # If the person with the provided phone doesn't exist, create a new person
+                person = Person.objects.create(
+                    phone=phone,
+                    lastName=data.get('lastName'),
+                    firstName=data.get('firstName'),
+                    startDate=data.get('startDate'),
+                    status=data.get('status'),
+                    email=data.get('email'),
+                    parentPhone1=data.get('parentPhone1'),
+                    parentPhone2=data.get('parentPhone2'),
+                    dob=data.get('dob'),
+                    userId=data.get('userId'),
+                    type=data.get('type'),
+                )
+
+                response_data = {
+                    'response_status': 'success',
+                    'message': 'Person created successfully',
+                    'id': person.id,
+                }
+                return JsonResponse(response_data, status=201, safe=False)
 
         except Exception as e:
             # Return the JSON response with error status and error message
@@ -87,7 +117,7 @@ def add_person(request):
             }
             return JsonResponse(response_data, status=400, safe=False)
 
-            # Render the form template for adding a person
+    # Render the form template for adding a person
     return HttpResponse('empty')
 
 

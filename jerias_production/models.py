@@ -346,7 +346,7 @@ class Payment(models.Model):
     chequeNumber = models.CharField(max_length=50, blank=True)
     chequeBank = models.CharField(max_length=100, blank=True)
     chequeDate = models.DateTimeField(null=True)
-    notes = models.CharField(max_length=2000, blank=True)
+    notes = models.CharField(max_length=2000, blank=True, null=True)
 
     def to_json(self):
         return {

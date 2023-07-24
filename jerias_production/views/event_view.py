@@ -86,7 +86,7 @@ def add_group_event(request):
         created = json_data['created']
         last_updated = json_data['lastUpdated']
 
-        created = timezone.make_aware(parser.parse(created))
+       # created = timezone.make_aware(parser.parse(created))
         last_updated = timezone.make_aware(parser.parse(last_updated))
         status = json_data.get('status')
         created_by_id = json_data.get('createdBy', {}).get('id')
