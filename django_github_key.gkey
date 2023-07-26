@@ -1,0 +1,10 @@
+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
+
+
+echo "# jerias_math_db" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/islmansour/jerias_math_db.git
+git push -u origin main
