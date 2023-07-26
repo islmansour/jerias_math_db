@@ -77,6 +77,7 @@ class Group(models.Model):
     weekDays = models.CharField(max_length=255)
     type = models.IntegerField(null=True)
     status = models.IntegerField(null=True)
+    days_of_week = models.IntegerField(default=0)
     createdBy = models.OneToOneField(
         'Person',
         null=True,
